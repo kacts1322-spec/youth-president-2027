@@ -76,7 +76,7 @@ async function generateLetterImagePng(
     const lines = wrapText(tempCtx, item.reason, contentWidth - 64, bodyFont);
     const senderText = showRecommenderName
       ? `From. ${item.recommenderName}`
-      : `From. 함께 기도하는 동역자 ${idx + 1}`;
+      : `From. 동역자 ${idx + 1}`;
     // 상단 패딩(28) + 줄수 * 32 + 서명 영역(44) + 하단 패딩(24)
     const blockHeight = 28 + lines.length * 32 + 44 + 24;
     return { lines, senderText, blockHeight };
@@ -86,8 +86,8 @@ async function generateLetterImagePng(
     (acc, cur) => acc + cur.blockHeight + 24,
     0
   );
-  const headerHeight = 270;
-  const footerHeight = 140;
+  const headerHeight = 260;
+  const footerHeight = 160;
   const totalHeight = headerHeight + totalItemsHeight + footerHeight;
 
   const canvas = document.createElement("canvas");
@@ -127,26 +127,26 @@ async function generateLetterImagePng(
   ctx.textAlign = "center";
   ctx.fillText("2027", centerX, 83);
 
-  // 3. 상단 교회명 및 수신인 타이틀
+  // 3. 상단 교회명 및 후보자 이름(단독 표기)
   ctx.fillStyle = "#8c6d46";
   ctx.font = '600 13px "Noto Sans KR", sans-serif';
-  ctx.fillText("높은뜻 하늘교회 청년부 2027년 회장 추천 편지", centerX, 132);
+  ctx.fillText("높은뜻 하늘교회 청년부 · 2027년 회장 추천 편지", centerX, 130);
 
   ctx.fillStyle = "#2c221e";
-  ctx.font = 'bold 28px "Gowun Batang", serif';
-  ctx.fillText(`사랑하고 축복하는 ${group.nomineeName} 님에게`, centerX, 176);
+  ctx.font = 'bold 30px "Gowun Batang", serif';
+  ctx.fillText(group.nomineeName, centerX, 174);
 
-  ctx.fillStyle = "#6e5a49";
+  ctx.fillStyle = "#5c4b3c";
   ctx.font = '15px "Gowun Batang", serif';
-  const introText = `총 ${group.totalCount}명의 청년부 지체가 한마음으로 ${group.nomineeName} 님을 추천하며 보내온 진심입니다.`;
-  ctx.fillText(introText, centerX, 214);
+  const introText = `청년들이 2027년 청년부 회장 후보로 ${group.nomineeName} 님을 추천했습니다. 추천 사유를 전해드려요!`;
+  ctx.fillText(introText, centerX, 212);
 
   // 구분선
   ctx.strokeStyle = "#e2d5c1";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(paddingX, 242);
-  ctx.lineTo(width - paddingX, 242);
+  ctx.moveTo(paddingX, 236);
+  ctx.lineTo(width - paddingX, 236);
   ctx.stroke();
 
   // 4. 각 추천인 편지 블록 렌더링
@@ -166,7 +166,11 @@ async function generateLetterImagePng(
     // 번호 장식
     ctx.fillStyle = "#9c7a52";
     ctx.font = 'bold 13px "Gowun Batang", serif';
-    ctx.fillText(`Letter ${String(idx + 1).padStart(2, "0")}`, paddingX + 28, currentY + 28);
+    ctx.fillText(
+      `Letter ${String(idx + 1).padStart(2, "0")}`,
+      paddingX + 28,
+      currentY + 28
+    );
 
     // 줄 노트 선 및 텍스트 출력
     ctx.font = bodyFont;
@@ -185,7 +189,7 @@ async function generateLetterImagePng(
       lineY += 32;
     }
 
-    // 추천인 서명 (우측 정렬)
+    // 추천인 서명 (우측 정렬: 'From. 이름')
     ctx.textAlign = "right";
     ctx.fillStyle = "#6b4f35";
     ctx.font = 'bold 16px "Gowun Batang", serif';
@@ -199,19 +203,27 @@ async function generateLetterImagePng(
     currentY += block.blockHeight + 24;
   });
 
-  // 5. 하단 맺음말
+  // 5. 하단 말씀 및 맺음말
   ctx.textAlign = "center";
-  ctx.fillStyle = "#7d6855";
+  ctx.fillStyle = "#6e5a49";
+  ctx.font = '14px "Gowun Batang", serif';
+  ctx.fillText(
+    "“몸이 하나이요 성령이 하나이니 이와 같이 너희가 부르심의 한 소망 안에서 부르심을 입었느니라 (에베소서 4:4)”",
+    centerX,
+    currentY + 30
+  );
+
+  ctx.fillStyle = "#5c4b3c";
   ctx.font = '15px "Gowun Batang", serif';
   ctx.fillText(
-    "공동체의 기도와 응원이 담긴 이 편지가 따뜻한 격려와 소망이 되기를 기도합니다.",
+    "부르심의 한 소망 안에서 소중한 우리 청년공동체를 함께 세워갈 수 있기를 바랍니다.",
     centerX,
-    currentY + 36
+    currentY + 58
   );
 
   ctx.fillStyle = "#4a3b2c";
   ctx.font = 'bold 16px "Gowun Batang", serif';
-  ctx.fillText("높은뜻 하늘교회 청년부 드림", centerX, currentY + 70);
+  ctx.fillText("높은뜻 하늘교회 청년부", centerX, currentY + 94);
 
   return canvas.toDataURL("image/png");
 }
@@ -274,7 +286,7 @@ export default function LetterView({
         <div className="flex items-center gap-2 text-sm text-amber-900">
           <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
           <span>
-            <strong>{group.nomineeName}</strong> 님의 추천 편지 ({group.totalCount}통)
+            <strong>{group.nomineeName}</strong> 추천 편지 ({group.totalCount}통)
           </span>
         </div>
 
@@ -361,7 +373,7 @@ export default function LetterView({
         <div className="pointer-events-none absolute inset-4 sm:inset-6 border border-amber-900/10 rounded-xl" />
 
         <div className="relative z-10">
-          {/* 상단 실링 왁스(인장) 아이콘 및 교회 타이틀 */}
+          {/* 상단 실링 왁스(인장) 아이콘 및 후보자 이름 */}
           <header className="text-center mb-10">
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-br from-[#9e3f2e] to-[#6e2417] shadow-md flex flex-col items-center justify-center border-2 border-amber-300/60 text-amber-50">
               <Heart className="w-4 h-4 fill-amber-100/90 text-amber-100 mb-0.5" />
@@ -374,35 +386,17 @@ export default function LetterView({
               높은뜻 하늘교회 청년부 · 2027년 회장 추천 편지
             </p>
 
+            {/* 1. 수식어 없이 후보자 이름만 깔끔하게 표시 */}
             <h1 className="font-letter text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 mt-2 mb-4 leading-snug">
-              To. 사랑하고 축복하는{" "}
-              <span className="text-amber-900 underline decoration-amber-700/40 underline-offset-8">
-                {group.nomineeName}
-              </span>{" "}
-              님에게
+              {group.nomineeName}
             </h1>
 
-            <p className="font-letter text-sm sm:text-base text-stone-600 max-w-xl mx-auto leading-relaxed mt-4">
-              2027년 높은뜻 하늘교회 청년부를 함께 세워갈 리더를 기도하며 추천하는 시간,
-              총 <strong className="text-amber-900 font-bold">{group.totalCount}명</strong>의 지체가{" "}
-              <strong className="text-stone-800">{group.nomineeName}</strong> 님을 향한 신뢰와 응원의 마음을
-              이 편지에 담아 보내왔습니다.
+            {/* 2. 간결한 추천 안내 문구 (하단 추천인 목록 배지는 제거) */}
+            <p className="font-letter text-sm sm:text-base text-stone-600 max-w-xl mx-auto leading-relaxed mt-3">
+              청년들이 2027년 청년부 회장 후보로{" "}
+              <strong className="text-stone-800">{group.nomineeName}</strong> 님을
+              추천했습니다. 추천 사유를 전해드려요!
             </p>
-
-            {/* 추천인 명단 한눈에 보기 배지 (실명 표시 모드일 때 노출) */}
-            {showRecommenderName && (
-              <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-1.5 bg-amber-50/90 border border-amber-200/80 rounded-full px-4 py-1.5 text-xs text-amber-950">
-                <span className="font-semibold text-amber-800 mr-1">
-                  마음을 모아 추천한 지체들:
-                </span>
-                {group.recommenders.map((rec, i) => (
-                  <span key={i} className="font-letter font-bold">
-                    {rec}
-                    {i < group.recommenders.length - 1 ? "," : ""}
-                  </span>
-                ))}
-              </div>
-            )}
           </header>
 
           <hr className="border-amber-900/15 mb-8" />
@@ -432,28 +426,28 @@ export default function LetterView({
                   {item.reason}
                 </div>
 
-                {/* 추천한 사람 서명 */}
+                {/* 3. 추천한 사람 서명 ('드림' 없이 'From. 이름'만 간결하게 표시) */}
                 <div className="mt-5 pt-2 flex justify-end items-center">
                   <p className="font-letter text-sm sm:text-base font-bold text-amber-950 bg-amber-100/60 px-3.5 py-1 rounded-full border border-amber-200/60">
                     {showRecommenderName
-                      ? `From. ${item.recommenderName} 드림`
-                      : `From. 함께 기도하는 동역자 ${index + 1} 드림`}
+                      ? `From. ${item.recommenderName}`
+                      : `From. 동역자 ${index + 1}`}
                   </p>
                 </div>
               </section>
             ))}
           </div>
 
-          {/* 편지 하단 맺음말 */}
+          {/* 4. 편지 하단 에베소서 4:4 말씀 및 맺음말 */}
           <footer className="mt-12 pt-8 border-t border-amber-900/15 text-center font-letter">
             <p className="text-sm sm:text-base text-stone-600 leading-relaxed mb-4">
-              &ldquo;우리가 사랑함은 그가 먼저 우리를 사랑하셨음이라 (요한일서 4:19)&rdquo;
+              &ldquo;몸이 하나이요 성령이 하나이니 이와 같이 너희가 부르심의 한 소망 안에서
+              부르심을 입었느니라 (에베소서 4:4)&rdquo;
               <br />
-              공동체 지체들의 눈에 비친 {group.nomineeName} 님의 아름다운 섬김과 따뜻한 마음이
-              <br className="hidden sm:inline" /> 하나님 보시기에도 참 귀하고 아름다운 향기임을 믿습니다.
+              부르심의 한 소망 안에서 소중한 우리 청년공동체를 함께 세워갈 수 있기를 바랍니다.
             </p>
             <p className="text-base sm:text-lg font-bold text-stone-900 mt-4">
-              높은뜻 하늘교회 청년부 드림
+              높은뜻 하늘교회 청년부
             </p>
           </footer>
         </div>
