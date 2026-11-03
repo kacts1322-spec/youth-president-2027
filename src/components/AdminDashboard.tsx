@@ -237,7 +237,7 @@ export default function AdminDashboard() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요 (기본값: 2027haneul)"
+                placeholder="관리자 비밀번호를 입력하세요"
                 className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 focus:border-amber-700 text-sm"
                 autoFocus
               />
