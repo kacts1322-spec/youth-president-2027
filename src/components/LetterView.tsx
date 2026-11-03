@@ -134,7 +134,7 @@ async function generateLetterImagePng(
 
   ctx.fillStyle = "#2c221e";
   ctx.font = 'bold 30px "Gowun Batang", serif';
-  ctx.fillText(group.nomineeName, centerX, 174);
+  ctx.fillText(`To. ${group.nomineeName}`, centerX, 174);
 
   ctx.fillStyle = "#5c4b3c";
   ctx.font = '15px "Gowun Batang", serif';
@@ -386,9 +386,9 @@ export default function LetterView({
               높은뜻 하늘교회 청년부 · 2027년 회장 추천 편지
             </p>
 
-            {/* 1. 수식어 없이 후보자 이름만 깔끔하게 표시 */}
+            {/* 1. 'To. 이름' 형태로 깔끔하게 표시 */}
             <h1 className="font-letter text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 mt-2 mb-4 leading-snug">
-              {group.nomineeName}
+              To. {group.nomineeName}
             </h1>
 
             {/* 2. 간결한 추천 안내 문구 (하단 추천인 목록 배지는 제거) */}
