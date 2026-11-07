@@ -55,6 +55,31 @@ interface CloudRow {
 }
 
 /**
+ * 초기 테스트용으로 들어갔던 예시 데이터(김하늘/이소망 샘플)인지 판별합니다.
+ * 왜 이 함수가 필요한가: 실사용 전환 시 기존에 생성된 테스트용 예시 데이터가
+ * 실제 추천 결과에 섞여 보이지 않도록 자동 감지하여 영구 삭제하기 위함입니다.
+ */
+function isLegacySampleData(nomineeName: string, recommenderName: string, reason: string): boolean {
+  if (
+    nomineeName === "김하늘" &&
+    (recommenderName === "이은혜" || recommenderName === "박찬양" || recommenderName === "정믿음") &&
+    (reason.includes("따뜻한 미소로 새가족") ||
+      reason.includes("묵묵히 예배 준비와 섬김") ||
+      reason.includes("작은 의견도 소중히"))
+  ) {
+    return true;
+  }
+  if (
+    nomineeName === "이소망" &&
+    (recommenderName === "최사랑" || recommenderName === "한온유") &&
+    (reason.includes("밝은 에너지로 분위기") || reason.includes("셀 리더로 섬기시면서"))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * 클라우드 DB(Supabase)에서 전체 추천 목록을 조회합니다.
  */
 async function fetchFromCloud(): Promise<Recommendation[] | null> {
@@ -75,11 +100,27 @@ async function fetchFromCloud(): Promise<Recommendation[] | null> {
     for (const row of rows) {
       try {
         const parsed = JSON.parse(row.note);
+        const nomineeName = normalizePersonName(parsed.nomineeName || "");
+        const recommenderName = normalizePersonName(parsed.recommenderName || "");
+        const reason = (parsed.reason || "").trim();
+
+        // 예시 데이터가 남아있다면 DB에서 즉시 자동 삭제하고 결과 목록에서 제외합니다.
+        if (isLegacySampleData(nomineeName, recommenderName, reason)) {
+          fetch(`${SUPABASE_URL}/rest/v1/absence_flags?id=eq.${row.id}`, {
+            method: "DELETE",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          }).catch(() => {});
+          continue;
+        }
+
         items.push({
           id: row.id,
-          nomineeName: normalizePersonName(parsed.nomineeName || ""),
-          recommenderName: normalizePersonName(parsed.recommenderName || ""),
-          reason: (parsed.reason || "").trim(),
+          nomineeName,
+          recommenderName,
+          reason,
           createdAt: parsed.createdAt || row.created_at,
         });
       } catch {
@@ -122,7 +163,10 @@ export async function getAllRecommendations(): Promise<Recommendation[]> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf-8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as Recommendation[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    return (parsed as Recommendation[]).filter(
+      (item) => !isLegacySampleData(item.nomineeName, item.recommenderName, item.reason)
+    );
   } catch {
     return [];
   }
@@ -294,39 +338,4 @@ export async function deleteRecommendationById(id: string): Promise<boolean> {
     },
   });
   return res.ok;
-}
-
-/**
- * 관리자 테스트 및 미리보기를 위한 예시(샘플) 추천 데이터를 생성합니다.
- */
-export async function seedSampleRecommendations(): Promise<void> {
-  const allItems = await getAllRecommendations();
-  if (allItems.length > 0) {
-    return;
-  }
-
-  const samples = [
-    {
-      nomineeName: "김하늘",
-      recommenderName: "이은혜",
-      reason:
-        "언제나 따뜻한 미소로 새가족과 지체들의 이야기를 먼저 들어주시는 모습이 참 귀합니다. 2027년 높은뜻 하늘교회 청년부가 서로를 품어주는 따뜻한 공동체가 되는 데 가장 좋은 리더가 되어주실 것 같아 마음 담아 추천합니다.",
-    },
-    {
-      nomineeName: "김하늘",
-      recommenderName: "박찬양",
-      reason:
-        "보이지 않는 곳에서도 묵묵히 예배 준비와 섬김의 자리를 지키는 성실함에 늘 감동을 받습니다. 말보다 삶으로 신앙의 본을 보여주시는 하늘님이 내년 청년부를 이끌어주신다면 모두가 기쁜 마음으로 함께 동역할 수 있을 거예요!",
-    },
-    {
-      nomineeName: "이소망",
-      recommenderName: "최사랑",
-      reason:
-        "청년부 모임마다 밝은 에너지로 분위기를 살려주시고, 지친 청년들에게 먼저 다가와 안부를 물어봐 주시는 따뜻한 마음이 정말 감사합니다. 소망님의 섬김이 2027년 청년부에 큰 힘이 될 것 같습니다.",
-    },
-  ];
-
-  for (const s of samples) {
-    await addRecommendation(s);
-  }
 }

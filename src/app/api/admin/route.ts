@@ -3,7 +3,6 @@ import {
   deleteRecommendationById,
   getGroupedRecommendations,
   renameOrMergeNominee,
-  seedSampleRecommendations,
 } from "@/lib/storage";
 
 /**
@@ -62,16 +61,6 @@ export async function POST(request: NextRequest) {
       const groups = await getGroupedRecommendations();
       return NextResponse.json({
         message: "해당 추천 내역이 삭제되었습니다.",
-        groups,
-      });
-    }
-
-    // 4. 예시(샘플) 추천 데이터 채우기 (최초 테스트 및 디자인 확인용)
-    if (action === "seed") {
-      await seedSampleRecommendations();
-      const groups = await getGroupedRecommendations();
-      return NextResponse.json({
-        message: "예시 추천 데이터가 생성되었습니다.",
         groups,
       });
     }

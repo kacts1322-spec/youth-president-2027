@@ -101,29 +101,6 @@ export default function AdminDashboard() {
   };
 
   /**
-   * 예시(샘플) 추천 데이터를 생성하여 편지 디자인 및 PDF 출력을 즉시 테스트할 수 있게 합니다.
-   */
-  const handleSeedSample = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "seed", password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.groups) {
-        setGroups(data.groups);
-        if (data.groups.length > 0) {
-          setSelectedNomineeName(data.groups[0].nomineeName);
-        }
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
    * 오타 등으로 분리된 후보자 이름을 수정하거나 다른 후보자 이름으로 병합합니다.
    */
   const handleRenameNominee = async (e: React.FormEvent) => {
@@ -321,19 +298,9 @@ export default function AdminDashboard() {
             <h2 className="font-letter text-xl font-bold text-stone-800 mb-2">
               아직 접수된 회장 추천서가 없습니다
             </h2>
-            <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+            <p className="text-sm text-stone-500 leading-relaxed">
               청년들이 메인 페이지에서 추천서를 제출하면 이곳에 후보자별로 자동 분류되어 표시됩니다.
-              <br />
-              편지 출력 및 개별 웹페이지 기능을 미리 확인해보시려면 아래 버튼으로 예시 데이터를 생성해보세요!
             </p>
-            <button
-              type="button"
-              onClick={handleSeedSample}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-800 text-white text-sm font-semibold hover:bg-amber-900 transition cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              예시 추천 데이터로 편지 미리보기 체험
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
